@@ -221,8 +221,8 @@ private:
 
     void set_value(std::size_t position, bool value)
     {
-        const size_t byte_index = position / CHAR_BIT;
-        const size_t offset = position % CHAR_BIT;
+        const std::size_t byte_index = position / CHAR_BIT;
+        const std::size_t offset = position % CHAR_BIT;
         const unsigned char byte = data[byte_index];
         const unsigned char value_c = value;
         data[byte_index] ^= (-value_c ^ byte) & (1 << offset);
