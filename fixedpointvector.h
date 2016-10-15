@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <climits> // For CHAR_BIT
 #include <bitset>
 
 namespace {
@@ -15,6 +16,90 @@ constexpr float abs(float value)
 }
 
 } // unnamed namespace
+
+template <std::size_t SIZE>
+class custom_bitset
+{
+public:
+    class reference
+    {
+    public:
+        reference(custom_bitset & object, std::size_t position)
+        : object(object),
+          position(position)
+        {
+        }
+
+        operator bool() const
+        {
+            return object.get(position);
+        }
+
+        reference & operator=(bool const value)
+        {
+            object.set(position, value);
+            return *this;
+        }
+
+    private:
+        custom_bitset & object;
+        std::size_t const position;
+    };
+
+    custom_bitset(unsigned char value = 0)
+    {
+        for (std::size_t position = 0; position < SIZE; ++position) {
+            set(position, 1 & (value >> position));
+        }
+    }
+
+    unsigned long to_ulong() const
+    {
+        unsigned long result = 0;
+        for (std::size_t position = 0; position < SIZE; ++position) {
+            result |= get(position) << position;
+        }
+        return result;
+    }
+
+    bool operator[](std::size_t position) const
+    {
+        return get(position);
+    }
+
+    bool test(std::size_t position) const
+    {
+        return get(position);
+    }
+
+    bool get(std::size_t position) const
+    {
+        const size_t byte_index = position / CHAR_BIT;
+        const size_t offset = position % CHAR_BIT;
+        const unsigned char byte = data[byte_index];
+        return 1 & (byte >> offset);
+    }
+
+    reference operator[](std::size_t position)
+    {
+        return reference(*this, position);
+    }
+
+    void set(std::size_t position, bool value)
+    {
+        const size_t byte_index = position / CHAR_BIT;
+        const size_t offset = position % CHAR_BIT;
+        const unsigned char byte = data[byte_index];
+        const unsigned char value_c = value;
+        data[byte_index] ^= (-value_c ^ byte) & (1 << offset);
+    }
+
+private:
+    unsigned char data[SIZE / CHAR_BIT + SIZE % CHAR_BIT];
+};
+
+template <std::size_t SIZE>
+using bitset = custom_bitset<SIZE>;
 
 template <
     std::size_t MAX_SIZE,
@@ -42,8 +127,8 @@ public:
 
         const float shifted = value * (1 << DECIMAL_BITS);
         const int filled = static_cast<int>(value) * (1 << DECIMAL_BITS);
-        const std::bitset<INTEGRAL_BITS> integer_part = std::bitset<INTEGRAL_BITS>(value);
-        const std::bitset<DECIMAL_BITS> decimal_part = std::bitset<DECIMAL_BITS>(shifted - filled);
+        const bitset<INTEGRAL_BITS> integer_part = bitset<INTEGRAL_BITS>(value);
+        const bitset<DECIMAL_BITS> decimal_part = bitset<DECIMAL_BITS>(shifted - filled);
 
         for (std::size_t i = 0; i < INTEGRAL_BITS; ++i) {
             data[position + i] = integer_part[i];
@@ -73,8 +158,8 @@ public:
 
         const float shifted = value * (1 << DECIMAL_BITS);
         const int filled = static_cast<int>(value) * (1 << DECIMAL_BITS);
-        std::bitset<INTEGRAL_BITS> integer_part = std::bitset<INTEGRAL_BITS>(value);
-        std::bitset<DECIMAL_BITS> decimal_part = std::bitset<DECIMAL_BITS>(shifted - filled);
+        bitset<INTEGRAL_BITS> integer_part = bitset<INTEGRAL_BITS>(value);
+        bitset<DECIMAL_BITS> decimal_part = bitset<DECIMAL_BITS>(shifted - filled);
 
         for (std::size_t i = 0; i < INTEGRAL_BITS; ++i) {
             data[n * CHUNK_BITS + i] = integer_part[i];
@@ -86,8 +171,8 @@ public:
 
     float operator[](const std::size_t n) const
     {
-        std::bitset<INTEGRAL_BITS> integer_part;
-        std::bitset<DECIMAL_BITS> decimal_part;
+        bitset<INTEGRAL_BITS> integer_part;
+        bitset<DECIMAL_BITS> decimal_part;
         for (std::size_t i = 0; i < INTEGRAL_BITS; ++i) {
             integer_part[i] = data[n * CHUNK_BITS + i];
         }
@@ -107,6 +192,6 @@ private:
         (ipow(2, INTEGRAL_BITS) - 1.0) + (1.0 - 1.0 / ipow(2, DECIMAL_BITS));
     static const constexpr std::size_t CHUNK_BITS =
         INTEGRAL_BITS + DECIMAL_BITS + SIGN_BIT;
-    std::bitset<MAX_SIZE * CHUNK_BITS> data;
+    bitset<MAX_SIZE * CHUNK_BITS> data;
     std::size_t position;
 };

@@ -24,14 +24,9 @@ int main()
     v.append(1223.94);
     v.append(-1223.94);
     v.append(1);
-    std::cout << v[0] << '\n';
-    std::cout << v[1] << '\n';
-    std::cout << v[2] << '\n';
-    std::cout << v[3] << '\n';
-    std::cout << v[4] << '\n';
-    std::cout << v[5] << '\n';
-    std::cout << v[6] << '\n';
-    std::cout << v[7] << '\n';
-    std::cout << v[8] << '\n';
-    std::cout << v[9] << '\n';
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        std::cout << i << ": " << v[i] << '\n';
+    }
+    v.set(3, 11.25);
+    std::cout << 3 << ": " << v[3] << '\n';
 }
