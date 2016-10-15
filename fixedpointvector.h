@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <cmath>
 #include <bitset>
 
 namespace {
@@ -8,6 +7,11 @@ constexpr int ipow(int base, int exp, int result = 1) {
     return exp < 1
         ? result
         : ipow(base * base, exp / 2, (exp % 2) ? result * base : result);
+}
+
+constexpr float abs(float value)
+{
+    return value >= 0 ? value : -value;
 }
 
 } // unnamed namespace
@@ -30,7 +34,7 @@ public:
         if (SIGN_BIT > 0) {
             data[position + INTEGRAL_BITS + DECIMAL_BITS] = value < 0;
         }
-        value = std::abs(value);
+        value = abs(value);
 
         if (value > MAX_VALUE) {
             value = MAX_VALUE;
@@ -61,7 +65,7 @@ public:
         if (SIGN_BIT > 0) {
             data[n * CHUNK_BITS + INTEGRAL_BITS + DECIMAL_BITS] = value < 0;
         }
-        value = std::abs(value);
+        value = abs(value);
 
         if (value > MAX_VALUE) {
             value = MAX_VALUE;
