@@ -5,7 +5,7 @@
 template <std::size_t SIZE>
 class bitset
 {
-public:
+private:
     class reference
     {
     public:
@@ -17,7 +17,7 @@ public:
 
         operator bool() const
         {
-            return object.get(position);
+            return object.get_value(position);
         }
 
         reference & operator=(bool const value)
@@ -28,12 +28,12 @@ public:
 
         bool operator~() const
         {
-            return ~object.get(position);
+            return ~object.get_value(position);
         }
 
         void flip()
         {
-            object.set_value(position, ~object.get(position));
+            object.set_value(position, ~object.get_value(position));
         }
 
     private:
@@ -41,6 +41,7 @@ public:
         std::size_t const position;
     };
 
+public:
     constexpr bitset()
     : data{0}
     {
@@ -72,31 +73,26 @@ public:
     {
         unsigned long result = 0;
         for (std::size_t position = 0; position < SIZE; ++position) {
-            result |= get(position) << position;
+            result |= get_value(position) << position;
         }
         return result;
     }
 
     constexpr bool operator[](std::size_t position) const
     {
-        return get(position);
+        return get_value(position);
     }
 
     bool test(std::size_t position) const
     {
         ensure_in_range(position);
-        return get(position);
-    }
-
-    constexpr bool get(std::size_t position) const
-    {
-        return 1 & (data[position / CHAR_BIT] >> (position % CHAR_BIT));
+        return get_value(position);
     }
 
     bool all() const
     {
         for (std::size_t i = 0; i < SIZE; ++i) {
-            if (!get(i)) {
+            if (!get_value(i)) {
                 return false;
             }
         }
@@ -106,7 +102,7 @@ public:
     bool any() const
     {
         for (std::size_t i = 0; i < SIZE; ++i) {
-            if (get(i)) {
+            if (get_value(i)) {
                 return false;
             }
         }
@@ -122,7 +118,7 @@ public:
     {
         std::size_t c = 0;
         for (std::size_t i = 0; i < SIZE; ++i) {
-            if (get(i)) {
+            if (get_value(i)) {
                 c += 1;
             }
         }
@@ -137,7 +133,7 @@ public:
     bitset<SIZE> & operator&=(const bitset<SIZE> & that)
     {
         for (std::size_t i = 0; i < SIZE; ++i) {
-            (*this)[i] = this->get(i) & that.get(i);
+            (*this)[i] = this->get_value(i) & that.get_value(i);
         }
         return *this;
     }
@@ -145,7 +141,7 @@ public:
     bitset<SIZE> & operator|=(const bitset<SIZE> & that)
     {
         for (std::size_t i = 0; i < SIZE; ++i) {
-            (*this)[i] = this->get(i) | that.get(i);
+            (*this)[i] = this->get_value(i) | that.get_value(i);
         }
         return *this;
     }
@@ -153,7 +149,7 @@ public:
     bitset<SIZE> & operator^=(const bitset<SIZE> & that)
     {
         for (std::size_t i = 0; i < SIZE; ++i) {
-            (*this)[i] = this->get(i) ^ that.get(i);
+            (*this)[i] = this->get_value(i) ^ that.get_value(i);
         }
         return *this;
     }
@@ -162,7 +158,7 @@ public:
     {
         bitset<SIZE> result;
         for (std::size_t i = 0; i < SIZE; ++i) {
-            result[i] = ~this->get(i);
+            result[i] = ~this->get_value(i);
         }
         return result;
     }
@@ -205,7 +201,7 @@ public:
     bitset<SIZE> & flip()
     {
         for (std::size_t i = 0; i < SIZE; ++i) {
-            set_value(i, ~get(i));
+            set_value(i, ~get_value(i));
         }
         return *this;
     }
@@ -213,8 +209,14 @@ public:
     bitset<SIZE> & flip(std::size_t position)
     {
         ensure_in_range(position);
-        set_value(position, ~get(position));
+        set_value(position, ~get_value(position));
         return *this;
+    }
+
+private:
+    constexpr bool get_value(std::size_t position) const
+    {
+        return 1 & (data[position / CHAR_BIT] >> (position % CHAR_BIT));
     }
 
     void set_value(std::size_t position, bool value)
@@ -226,7 +228,6 @@ public:
         data[byte_index] ^= (-value_c ^ byte) & (1 << offset);
     }
 
-private:
     void ensure_in_range(std::size_t position) const
     {
         if (position < 0 || position > SIZE) {
