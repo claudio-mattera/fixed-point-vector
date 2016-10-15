@@ -30,6 +30,32 @@ template <
     std::size_t SIGN_BIT>
 class fixed_point_vector
 {
+private:
+    class reference
+    {
+    public:
+        reference(fixed_point_vector & object, std::size_t position)
+        : object(object),
+          position(position)
+        {
+        }
+
+        operator float() const
+        {
+            return object.get_value(position);
+        }
+
+        reference & operator=(float const value)
+        {
+            object.set_value(position, value);
+            return *this;
+        }
+
+    private:
+        fixed_point_vector & object;
+        std::size_t const position;
+    };
+
 public:
     fixed_point_vector()
     : position(0)
@@ -38,27 +64,7 @@ public:
 
     void append(float value)
     {
-        if (SIGN_BIT > 0) {
-            data[position + INTEGRAL_BITS + DECIMAL_BITS] = value < 0;
-        }
-        value = abs(value);
-
-        if (value > MAX_VALUE) {
-            value = MAX_VALUE;
-        }
-
-        const float shifted = value * (1 << DECIMAL_BITS);
-        const int filled = static_cast<int>(value) * (1 << DECIMAL_BITS);
-        const bitset<INTEGRAL_BITS> integer_part = bitset<INTEGRAL_BITS>(value);
-        const bitset<DECIMAL_BITS> decimal_part = bitset<DECIMAL_BITS>(shifted - filled);
-
-        for (std::size_t i = 0; i < INTEGRAL_BITS; ++i) {
-            data[position + i] = integer_part[i];
-        }
-        for (std::size_t i = 0; i < DECIMAL_BITS; ++i) {
-            data[position + i + INTEGRAL_BITS] = decimal_part[i];
-        }
-
+        set_value(position / CHUNK_BITS, value);
         position += CHUNK_BITS;
     }
 
@@ -67,7 +73,18 @@ public:
         return position / CHUNK_BITS;
     }
 
-    void set(const std::size_t n, float value)
+    float operator[](const std::size_t n) const
+    {
+        return get_value(n);
+    }
+
+    reference operator[](std::size_t position)
+    {
+        return reference(*this, position);
+    }
+
+private:
+    void set_value(const std::size_t n, float value)
     {
         if (SIGN_BIT > 0) {
             data[n * CHUNK_BITS + INTEGRAL_BITS + DECIMAL_BITS] = value < 0;
@@ -91,7 +108,7 @@ public:
         }
     }
 
-    float operator[](const std::size_t n) const
+    float get_value(const std::size_t n) const
     {
         bitset<INTEGRAL_BITS> integer_part;
         bitset<DECIMAL_BITS> decimal_part;

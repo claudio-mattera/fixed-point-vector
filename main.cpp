@@ -24,9 +24,10 @@ int main()
     v.append(1223.94);
     v.append(-1223.94);
     v.append(1);
+
     for (std::size_t i = 0; i < v.size(); ++i) {
         std::cout << i << ": " << v[i] << '\n';
     }
-    v.set(3, 11.25);
+    v[3] = 11.25;
     std::cout << 3 << ": " << v[3] << '\n';
 }
