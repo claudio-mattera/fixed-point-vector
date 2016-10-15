@@ -53,7 +53,7 @@ public:
 
     std::size_t size()
     {
-        return position;
+        return position / CHUNK_BITS;
     }
 
     void set(const std::size_t n, float value)
