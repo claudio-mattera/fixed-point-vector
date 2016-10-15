@@ -68,7 +68,7 @@ public:
         position += CHUNK_BITS;
     }
 
-    std::size_t size()
+    std::size_t size() const
     {
         return position / CHUNK_BITS;
     }
