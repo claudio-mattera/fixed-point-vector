@@ -1,4 +1,5 @@
-#include <cstdlib>
+#include <cstdlib> // For std::size_t
+#include <ostream> // For std::ostream
 
 namespace {
 
@@ -134,3 +135,22 @@ private:
     bitset<MAX_SIZE * CHUNK_BITS> data;
     std::size_t position;
 };
+
+template <
+    std::size_t MAX_SIZE,
+    std::size_t INTEGRAL_BITS,
+    std::size_t DECIMAL_BITS,
+    std::size_t SIGN_BIT>
+std::ostream & operator<<(
+    std::ostream & stream,
+    const fixed_point_vector
+        <MAX_SIZE, INTEGRAL_BITS, DECIMAL_BITS, SIGN_BIT> & vector)
+{
+    if (vector.size() > 0) {
+        stream << vector[0];
+        for (std::size_t i = 1; i < vector.size(); ++i) {
+            stream << ", " << vector[i];
+        }
+    }
+    return stream;
+}
