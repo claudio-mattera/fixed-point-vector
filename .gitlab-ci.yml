@@ -1,0 +1,50 @@
+stages:
+  - configure
+  - lint
+  - build
+  - test
+  - documentation
+  - package
+
+
+before_script:
+  - apt-get update
+  - apt-get install -y build-essential cmake libboost-test-dev
+
+
+configure:cmake:
+  stage: configure
+  image: debian:stable
+  script:
+    - mkdir -p ./build
+    - pushd ./build/
+    - cmake ../ -DBUILD_EXAMPLES=ON -DENABLE_TESTS=ON
+    - popd
+  artifacts:
+    paths:
+      - './build/'
+
+
+build:make:
+  stage: build
+  image: debian:stable
+  script:
+    - pushd ./build/
+    - make VERBOSE=1
+    - popd
+  dependencies:
+    - configure:cmake
+  artifacts:
+    paths:
+      - './build/'
+
+
+test:cmake:
+  stage: test
+  image: debian:stable
+  script:
+    - pushd ./build/
+    - ctest --verbose
+    - popd
+  dependencies:
+    - build:make

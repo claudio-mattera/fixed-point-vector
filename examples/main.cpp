@@ -1,6 +1,6 @@
 #include <iostream>
 #include <array>
-#include "fixedpointvector.h"
+#include <fixedpointvector.h>
 
 const constexpr std::size_t COUNT = 600;
 

@@ -17,7 +17,7 @@ constexpr float abs(float value)
 } // unnamed namespace
 
 #if 1
-# include "bitset.h"
+# include "fixedpointvectorbitset.h"
 #else
 # include <bitset>
 template <std::size_t SIZE>
